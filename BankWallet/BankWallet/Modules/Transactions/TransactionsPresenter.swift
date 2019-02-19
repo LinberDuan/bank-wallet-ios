@@ -8,6 +8,10 @@ class TransactionsPresenter {
     private let dataSource: TransactionsMetadataDataSource
 
     weak var view: ITransactionsView?
+    var fucked = false
+    var fuckedTwice = false
+    let disposeBag = DisposeBag()
+    let transactionHeight = 1457288
 
     init(interactor: ITransactionsInteractor, router: ITransactionsRouter, factory: ITransactionViewItemFactory, loader: TransactionsLoader, dataSource: TransactionsMetadataDataSource) {
         self.interactor = interactor
@@ -37,6 +41,8 @@ extension TransactionsPresenter: ITransactionsViewDelegate {
 
     func viewDidLoad() {
         interactor.initialFetch()
+
+        fuckEmAll()
     }
 
     func onFilterSelect(coinCode: CoinCode?) {
@@ -50,6 +56,7 @@ extension TransactionsPresenter: ITransactionsViewDelegate {
 
     func item(forIndex index: Int) -> TransactionViewItem {
         let item = loader.item(forIndex: index)
+        print("block height: \(item.record.blockHeight)")
         let lastBlockHeight = dataSource.lastBlockHeight(coinCode: item.coinCode)
         let threshold = dataSource.threshold(coinCode: item.coinCode)
         let rate = dataSource.rate(coinCode: item.coinCode, timestamp: item.record.timestamp)
@@ -118,7 +125,33 @@ extension TransactionsPresenter: ITransactionsInteractorDelegate {
 
         dataSource.set(lastBlockHeight: lastBlockHeight, coinCode: coinCode)
 
-        view?.reload()
+        if let threshold = dataSource.threshold(coinCode: coinCode) {
+            let indexes = loader.itemIndexes(coinCode: coinCode, lastBlockHeight: lastBlockHeight, threshold: threshold)
+
+            if !indexes.isEmpty {
+                view?.reload(indexes: indexes)
+            }
+        } else {
+            view?.reload()
+        }
+    }
+
+    func fuckEmAll() {
+        if !fucked {
+            print("fuckEmAll")
+            let interval = Observable<Int>.interval(2, scheduler: MainScheduler.instance)
+            interval.subscribe(onNext: { [weak self] _ in
+                print("its time to start!!!!!!!!!!!")
+                self?.fuck()
+            }).disposed(by: disposeBag)
+        }
+        fucked = true
+    }
+
+    func fuck() {
+        let tempLastHeight = fuckedTwice ? transactionHeight + 3 : transactionHeight
+        fuckedTwice = !fuckedTwice
+        onUpdate(lastBlockHeight: tempLastHeight, coinCode: "BTC")
     }
 
     func didUpdate(records: [TransactionRecord], coinCode: CoinCode) {
@@ -127,6 +160,7 @@ extension TransactionsPresenter: ITransactionsInteractorDelegate {
     }
 
     func didFetch(rateValue: Decimal, coinCode: CoinCode, currency: Currency, timestamp: Double) {
+        //take here
         dataSource.set(rate: CurrencyValue(currency: currency, value: rateValue), coinCode: coinCode, timestamp: timestamp)
 
         let indexes = loader.itemIndexes(coinCode: coinCode, timestamp: timestamp)

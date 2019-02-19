@@ -43,6 +43,10 @@ class TransactionRecordDataSource {
         return itemsDataSource.itemIndexes(coinCode: coinCode, timestamp: timestamp)
     }
 
+    func itemIndexes(coinCode: String, lastBlockHeight: Int, threshold: Int) -> [Int] {
+        return itemsDataSource.itemIndexes(coinCode: coinCode, lastBlockHeight: lastBlockHeight, threshold: threshold)
+    }
+
     var fetchDataList: [FetchData] {
         return poolRepo.activePools.compactMap { pool in
             pool.getFetchData(limit: limit)

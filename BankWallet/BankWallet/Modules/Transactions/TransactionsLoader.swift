@@ -25,6 +25,10 @@ class TransactionsLoader {
         return dataSource.itemIndexes(coinCode: coinCode, timestamp: timestamp)
     }
 
+    func itemIndexes(coinCode: CoinCode, lastBlockHeight: Int, threshold: Int) -> [Int] {
+        return dataSource.itemIndexes(coinCode: coinCode, lastBlockHeight: lastBlockHeight, threshold: threshold)
+    }
+
     func set(coinCodes: [CoinCode]) {
         dataSource.set(coinCodes: coinCodes)
     }

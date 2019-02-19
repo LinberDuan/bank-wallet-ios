@@ -63,6 +63,13 @@ class TransactionsViewController: UITableViewController {
         return AppTheme.statusBarStyle
     }
 
+    func bind(at indexPath: IndexPath) {
+        print("want to bind indexPath: \(indexPath)")
+        if let cell = tableView.cellForRow(at: indexPath) as? TransactionCell {
+            cell.bind(item: delegate.item(forIndex: indexPath.row))
+        }
+    }
+
 }
 
 extension TransactionsViewController: ITransactionsView {
@@ -72,13 +79,14 @@ extension TransactionsViewController: ITransactionsView {
     }
 
     func reload() {
+        print("reload data")
         tableView.reloadData()
     }
 
     func reload(indexes: [Int]) {
-        tableView.beginUpdates()
-        tableView.reloadRows(at: indexes.map { IndexPath(row: $0, section: 0) }, with: .none)
-        tableView.endUpdates()
+        for index in indexes {
+            bind(at: IndexPath(row: index, section: 0))
+        }
     }
 
 }

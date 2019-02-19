@@ -37,7 +37,21 @@ class TransactionItemDataSource {
         return indexes
     }
 
+    func itemIndexes(coinCode: String, lastBlockHeight: Int, threshold: Int) -> [Int] {
+        var indexes = [Int]()
+
+        for (index, item) in items.enumerated() {
+            if let blockHeight = item.record.blockHeight, item.coinCode == coinCode && lastBlockHeight - blockHeight <= threshold {
+                indexes.append(index)
+            }
+        }
+
+        return indexes
+    }
+
     func handle(updatedItems: [TransactionItem], insertedItems: [TransactionItem]) {
+        let tempItems = items
+
         for item in updatedItems {
             items.removeAll { $0 == item }
         }
@@ -46,6 +60,8 @@ class TransactionItemDataSource {
 
         items.sort()
         items.reverse()
+
+        compare(items to tempItems)
     }
 
 }
